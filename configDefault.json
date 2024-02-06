@@ -1,0 +1,33 @@
+{
+    "bot": {
+      "token": "Votre token ici",
+      "clientId": "Votre id du client ici"
+    },
+    "serveur": {
+      "host": "ip du serveur minecraft",
+      "port": "port du serveur minecraft",
+      "rconPassword": "mot de passe du rcon",
+      "userPassword": "mot de passe pour l'utilisateur pouvant démmarer le serveur minecraft"
+    },
+    "sql": {
+      "host": "ip du serveur sql",
+      "user": "nom d'utilisateur du serveur sql",
+      "password": "mot de passe du serveur sql",
+      "database": "nom de la base de donnée"
+    },
+    "serv_dev": {
+      "guildId": "id du serveur discord de dev",
+      "roleBienvenue": "id du role de bienvenue",
+      "roleMcEnregistre": "id du role de membre enregistré /register",
+      "channelBienvenue": "id du channel de bienvenue"
+    },
+    "serv_antre": {
+      "guildId": "id du serveur discord principal",
+      "roleBienvenue": "id du role de bienvenue",
+      "roleMcEnregistre": "id du role de membre enregistré /register",
+      "channelBienvenue": "id du channel de bienvenue",
+      "channelMc": "id du channel de disscussion minecraft vers discord et discord vers minecraft",
+      "channelMcLogs": "id du channel de logs minecraft",
+      "channelArisoutreLogs": "id du channel de logs arisoutre"
+    }
+  }

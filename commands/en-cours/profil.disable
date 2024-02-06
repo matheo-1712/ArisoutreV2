@@ -1,0 +1,396 @@
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('@discordjs/builders');
+const path = require('path');
+const fs = require('fs');
+
+// Charger le fichier JSON
+const rawdata = fs.readFileSync('/home/arisu/Arisu/bdd/server-info.json');
+const data = JSON.parse(rawdata);
+
+const serveursAutorises = [];
+
+for (const serveur of data.serveurs) {
+    if (serveur.informations.actif) {
+        serveursAutorises.push(serveur.nom);
+    }
+}
+
+function getServeurInfos(serverName) {
+    const serverInfoFilePath = path.join(__dirname, '../bdd/server-info.json');
+    const serverInfoData = fs.readFileSync(serverInfoFilePath, 'utf8');
+    const serverInfo = JSON.parse(serverInfoData);
+
+    const serverDetails = serverInfo.serveurs.find(s => s.nom === serverName);
+    return serverDetails
+}
+
+function isVersionBefore113(versionString) {
+    // Séparez la version en composants majeur, mineur et patch
+    const [major, minor, patch] = versionString.split('.').map(Number);
+
+    // Comparez avec la version 1.13
+    if (major < 1 || (major === 1 && minor < 13)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function isVersionBefore117(versionString) {
+    // Séparez la version en composants majeur, mineur et patch
+    const [major, minor, patch] = versionString.split('.').map(Number);
+
+    // Comparez avec la version 1.17
+    if (major < 1 || (major === 1 && minor < 17)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function getPlayerStatsPre1_13(serverChemin, serverMonde, UUID, version) {
+     return "Pas implémenté"
+}
+
+function getPlayerStatsAft1_13(serverChemin, serverMonde, UUID, version) {
+    try {
+        if (`${serverChemin}/${serverMonde}/stats/${UUID}.json`) {
+            // Lire le fichier stats
+            const playerStatsFilePath = `${serverChemin}/${serverMonde}/stats/${UUID}.json`;
+    
+            const playerStatsData = fs.readFileSync(playerStatsFilePath, 'utf8');
+            const playerStats = JSON.parse(playerStatsData);
+    
+            // Accéder au statistiques
+            // Valeurs de "minecraft:custom"
+            let tempsJeux = 0, nbMorts = 0, tempsDernMorts = 0, nbMobKills = 0, nbJoueursKills = 0, raidWins = 0, raidLances = 0,
+            distMarche = 0, distSprint = 0, distSneak = 0, distCheval = 0, distMinecart = 0, distChute = 0, distEscalade = 0, distAviate = 0, distBateau = 0, distMarcheSurEau = 0, distMarcheSousEau = 0, distNage = 0, distTotalePied = 0, distTotaleVehicule = 0, distTotaleDansEau = 0, distChuteEscalade = 0, distTotale = 0
+            if (playerStats.stats['minecraft:custom']) {
+                // -- Général
+                tempsJeuxPre113 = Math.floor(playerStats.stats['minecraft:custom']['minecraft:play_one_minute'] / 20 / 3600) || 0;
+                tempsJeuxAft113 = Math.floor(playerStats.stats['minecraft:custom']['minecraft:play_time'] / 20 / 3600) || 0;
+                if (tempsJeuxPre113 > tempsJeuxAft113) {tempsJeux = tempsJeuxPre113} else {tempsJeux = tempsJeuxAft113}
+
+                nbMorts = Math.floor(playerStats.stats['minecraft:custom']['minecraft:deaths']) || 0;
+                tempsDernMorts = Math.floor(playerStats.stats['minecraft:custom']['minecraft:time_since_death'] / 20 / 3600) || 0;
+                nbMobKills = Math.floor(playerStats.stats['minecraft:custom']['minecraft:mob_kills']) || 0;
+                nbJoueursKills = Math.floor(playerStats.stats['minecraft:custom']['minecraft:player_kills']) || 0;
+                // -- Raids
+                raidWins = playerStats.stats['minecraft:custom']['minecraft:raid_win'] || 0;
+                raidLances = playerStats.stats['minecraft:custom']['minecraft:raid_trigger'] || 0;
+                // -- Distances
+                distMarche = Math.floor(playerStats.stats['minecraft:custom']['minecraft:walk_one_cm'] / 100000) || 0;
+                distSprint = Math.floor(playerStats.stats['minecraft:custom']['minecraft:sprint_one_cm'] / 100000) || 0;
+                distSneak = Math.floor(playerStats.stats['minecraft:custom']['minecraft:crouch_one_cm'] / 100000) || 0;
+                distCheval = Math.floor(playerStats.stats['minecraft:custom']['minecraft:horse_one_cm'] / 100000) || 0;
+                distMinecart = Math.floor(playerStats.stats['minecraft:custom']['minecraft:minecart_one_cm'] / 100000) || 0;
+                distChute = Math.floor(playerStats.stats['minecraft:custom']['minecraft:fall_one_cm'] / 100000) || 0;
+                distEscalade = Math.floor(playerStats.stats['minecraft:custom']['minecraft:climb_one_cm'] / 100000) || 0;
+                distAviate = Math.floor(playerStats.stats['minecraft:custom']['minecraft:aviate_one_cm'] / 100000) || 0;
+                distBateau = Math.floor(playerStats.stats['minecraft:custom']['minecraft:boat_one_cm'] / 100000) || 0;
+                distMarcheSurEau = Math.floor(playerStats.stats['minecraft:custom']['minecraft:walk_on_water_one_cm'] / 100000) || 0;
+                distMarcheSousEau = Math.floor(playerStats.stats['minecraft:custom']['minecraft:walk_under_water_one_cm'] / 100000) || 0;
+                distNage = Math.floor(playerStats.stats['minecraft:custom']['minecraft:swim_one_cm'] / 100000) || 0;
+                // -- Totaux distance
+                distTotalePied = distMarche + distSprint + distSneak;
+                distTotaleVehicule = distCheval + distBateau + distAviate;
+                distTotaleDansEau = distMarcheSurEau + distMarcheSousEau + distNage;
+                distChuteEscalade = distChute + distEscalade;
+                distTotale = distMarche + distSprint + distSneak + distCheval + distMinecart + distChute + distEscalade + distAviate + distBateau + distMarcheSurEau + distMarcheSousEau + distNage;
+            }
+            // Valeurs de "minecraft:killed_by"
+            let killedByPlayer
+            let killedByGolem
+            let killedByCreeper
+            let killedByWarden
+            if (playerStats.stats['minecraft:killed_by']) {
+                killedByPlayer = playerStats.stats['minecraft:killed_by']['minecraft:player'] || 0;
+                killedByGolem = playerStats.stats['minecraft:killed_by']['minecraft:iron_golem'] || 0;
+                killedByCreeper = playerStats.stats['minecraft:killed_by']['minecraft:creeper'] || 0;
+                killedByWarden = playerStats.stats['minecraft:killed_by']['minecraft:warden'] || 0;
+            }
+            // Valeurs de "minecraft:killed"
+            let killedEnderDragon
+            let killedWither
+            let killedElderGuardian
+            let killedWarden
+            let killedEndermen
+            if (playerStats.stats['minecraft:killed']) {
+                killedEnderDragon = playerStats.stats['minecraft:killed']['minecraft:ender_dragon'] || 0;
+                killedWither = playerStats.stats['minecraft:killed']['minecraft:wither'] || 0;
+                killedElderGuardian = playerStats.stats['minecraft:killed']['minecraft:elder_guardian'] || 0;
+                killedWarden = playerStats.stats['minecraft:killed']['minecraft:warden'] || 0;
+                killedEndermen = playerStats.stats['minecraft:killed']['minecraft:enderman'] || 0;
+            }
+            // Valeurs de "minecraft:mined"
+            let mineDiamound
+            let mineDebris
+            if (playerStats.stats['minecraft:mined']) {
+                const mineDiamoundCobble = playerStats.stats['minecraft:mined']['minecraft:diamond_ore'] || 0;
+                const mineDiamoundDeepsl = playerStats.stats['minecraft:mined']['minecraft:deepslate_diamond_ore'] || 0;
+    
+                mineDiamound = mineDiamoundCobble + mineDiamoundDeepsl;
+                mineDebris = playerStats.stats['minecraft:mined']['minecraft:ancient_debris'] || 0;
+            }
+    
+            const playerStatsVar = {
+                tempsJeux, nbMorts, tempsDernMorts, nbMobKills, nbJoueursKills,
+                distMarche, distSprint, distSneak, distCheval, distMinecart, distChute, distEscalade, distAviate, distBateau, distMarcheSurEau, distMarcheSousEau, distNage,
+                distTotalePied, distTotaleVehicule, distTotaleDansEau, distChuteEscalade, distTotale,
+                killedByPlayer, killedByGolem, killedByCreeper, killedByWarden,
+                killedEnderDragon, killedWither, killedElderGuardian, killedWarden, killedEndermen,
+                raidWins, raidLances, mineDiamound, mineDebris
+            }
+            return playerStatsVar
+        }
+    } catch (error) {
+        console.error(`FICHIER DE STATISTIQUES DU JOUEUR INTROUVABLE !`)
+        let tempsJeux = 0, nbMorts = 0, tempsDernMorts = 0, nbMobKills = 0, nbJoueursKills = 0, distMarche = 0, distSprint = 0, distSneak = 0, distCheval = 0, distMinecart = 0, distChute = 0, distEscalade = 0, distAviate = 0, distBateau = 0, distMarcheSurEau = 0, distMarcheSousEau = 0, distNage = 0, distTotalePied = 0, distTotaleVehicule = 0, distTotaleDansEau = 0, distChuteEscalade = 0, distTotale = 0, killedByPlayer, killedByGolem, killedByCreeper, killedByWarden, killedEnderDragon, killedWither, killedElderGuardian, killedWarden, killedEndermen, raidWins = 0, raidLances = 0, mineDiamound = 0, mineDebris = 0
+        const playerStatsVar = {
+            tempsJeux, nbMorts, tempsDernMorts, nbMobKills, nbJoueursKills,
+            distMarche, distSprint, distSneak, distCheval, distMinecart, distChute, distEscalade, distAviate, distBateau, distMarcheSurEau, distMarcheSousEau, distNage,
+            distTotalePied, distTotaleVehicule, distTotaleDansEau, distChuteEscalade, distTotale,
+            killedByPlayer, killedByGolem, killedByCreeper, killedByWarden,
+            killedEnderDragon, killedWither, killedElderGuardian, killedWarden, killedEndermen,
+            raidWins, raidLances, mineDiamound, mineDebris
+        }
+        return playerStatsVar
+    }
+}
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('mc-profil')
+        .setDescription('Envoie le profil minecraft du joueur sur le serveur actuellement actif.')
+        .addStringOption(option =>
+            option.setName('pseudo')
+                .setDescription('Votre pseudonyme Minecraft.')
+                .setRequired(true)),
+    async execute(interaction) {
+        // Récupération de l'UUID
+        const joueur = interaction.options.getString('pseudo');
+        let UUID;
+        try {
+            const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${joueur}`);
+            const data = await response.json();
+            UUID = data.id;
+            console.log(`L'UUID de ${joueur} est : ${UUID}`);
+            // Formatage de l'UUID pour coller avec les noms de fichiers
+            const formattedUUID = UUID.slice(0, 8) + '-' + UUID.slice(8, 12) + '-' + UUID.slice(12, 16) + '-' + UUID.slice(16, 20) + '-' + UUID.slice(20);
+            UUID = formattedUUID
+        } catch (error) {
+            console.error(`Erreur lors de la récupération de l'UUID : ${error.message}`);
+            await interaction.reply("Une erreur s'est produite lors de la récupération de l'UUID :\n```" + error + "```");
+            return;
+        }
+        // Fin de la récupération de l'UUID
+
+        // Récupération des données du serveur actif pour se débarasser de se code
+        // Récupération du serveur actif
+        const serverFilePath = path.join(__dirname, '../triggers/server.json');
+        const serverData = fs.readFileSync(serverFilePath, 'utf8');
+        const serverName = JSON.parse(serverData).server;
+        console.log(`Serveur actif : ${serverName}`);
+
+        // Donne l'index de serverName dans serveursAutorises
+        var serverIndex = serveursAutorises.indexOf(serverName);
+
+        // Récupération de ses infos
+        const serverDetails = getServeurInfos(serverName)
+        // Fin de la récupération des infos de serveur
+
+        if (serverDetails) {
+            const { embedColor, caption, chemin, nomMonde, versionmc } = serverDetails.informations;
+            const playerStatsVar = getPlayerStatsAft1_13(chemin, nomMonde, UUID, serverName, versionmc)
+
+            try {
+                // Répondre à l'interaction Discord
+                try {
+                    // Boutons & collector
+                    const moreStats = new ButtonBuilder()
+                        .setCustomId('more')
+                        .setLabel('Plus de stats sur le serveur actif')
+                        .setStyle(3)
+                    const prevServ = new ButtonBuilder()
+                        .setCustomId('prev')
+                        .setLabel('← Serveur précédent')
+                        .setStyle(1)
+                    const nextServ = new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('Prochain serveur →')
+                        .setStyle(1)
+                    const lessStats = new ButtonBuilder()
+                        .setCustomId('more')
+                        .setLabel('Moins de stats')
+                        .setStyle(3)
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(prevServ, nextServ, moreStats)
+                    // Fin des boutons & collector
+
+                    const backrow = new ActionRowBuilder()
+                        .addComponents(lessStats)
+                    // Fin des boutons & collector
+
+                    const switchonlyrow = new ActionRowBuilder()
+                    .addComponents(prevServ, nextServ)
+                // Fin des boutons & collector
+
+                    // Collector
+                    const collector = interaction.channel.createMessageComponentCollector({ time: 150000 });
+                    let moreStatsClicked = false;
+
+                    collector.on('collect', async i => {
+                        try {
+                            if (i.customId === 'more') {
+                                // Inversez l'état de moreStatsClicked
+                                moreStatsClicked = !moreStatsClicked;
+
+                                if (moreStatsClicked) {
+                                    // Créez un nouvel embed avec des statistiques supplémentaires
+                                    // Avant 1.13
+                                    const moreStatsEmbedPre1_13 = new EmbedBuilder()
+                                    .setColor(parseInt(embedColor.replace('#', '0x')))
+                                    .setTitle(`Statistiques Minecraft du joueur "${joueur}" sur "${serverName}"`)
+                                    .setURL(`https://fr.namemc.com/profile/${joueur}`)
+
+                                    .setDescription(
+                                        "**La version de minecraft est trop ancienne. Toutes les statistiques ne peuvent pas être affichés.**"
+                                    )
+                                    
+                                    .setThumbnail(`https://mc-heads.net/avatar/${UUID}/60`)
+
+                                    .setTimestamp()
+                                    .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+
+                                    // Après 1.13
+                                    const moreStatsEmbedAft1_13 = new EmbedBuilder()
+                                        .setColor(parseInt(embedColor.replace('#', '0x')))
+                                        .setTitle(`Statistiques Minecraft du joueur "${joueur}" sur "${serverName}"`)
+                                        .setURL(`https://fr.namemc.com/profile/${joueur}`)
+
+                                        .setDescription(
+                                            "**Distance**```" + `\n• Distance en marchant ➤ ${playerStatsVar.distMarche} Km\n• Distance en courant ➤ ${playerStatsVar.distSprint} Km\n• Distance en sneak ➤ ${playerStatsVar.distSneak} Km\n• Distance à cheval ➤ ${playerStatsVar.distCheval} Km\n• Distance en minecart ➤ ${playerStatsVar.distMinecart} Km\n• Distance en chute libre ➤ ${playerStatsVar.distChute} Km\n• Distance en escaladant ➤ ${playerStatsVar.distEscalade} Km\n• Distance en elytres ➤ ${playerStatsVar.distAviate} Km\n• Distance en bateau ➤ ${playerStatsVar.distBateau} Km\n• Distance en marchant sur l'eau ➤ ${playerStatsVar.distMarcheSurEau} Km\n• Distance en marchant sous l'eau ➤ ${playerStatsVar.distMarcheSousEau} Km\n• Distance à la nage ➤ ${playerStatsVar.distNage} Km\n• Distance totale ➤ ${playerStatsVar.distTotale} Km\n` + "```\n" +
+                                            "**Á été tué par**\n```" + `• un Joueur ➤ ${playerStatsVar.killedByPlayer} fois\n• un Golem ➤ ${playerStatsVar.killedByGolem} fois\n• un Creeper ➤ ${playerStatsVar.killedByCreeper} fois\n• un Warden ➤ ${playerStatsVar.killedByWarden} fois` + "```\n" +
+                                            "**Á tué**\n```" + `• un Joueur ➤ ${playerStatsVar.nbJoueursKills} fois\n• un EnderDragon ➤ ${playerStatsVar.killedEnderDragon} fois\n• un Wither ➤ ${playerStatsVar.killedWither} fois\n• un ElderGuardian ➤ ${playerStatsVar.killedElderGuardian} fois\n• un Warden ➤ ${playerStatsVar.killedWarden} fois\n• un Endermen ➤ ${playerStatsVar.killedEndermen} fois\n` + "```\n" +
+                                            "**Autres statistiques**\n```" + `• Raids commencés ➤ ${playerStatsVar.raidLances}\n• Raids gagnés ➤ ${playerStatsVar.raidWins}\n• Diamants minés ➤ ${playerStatsVar.mineDiamound}\n• Anciens débris minés ➤ ${playerStatsVar.mineDebris}\n` + "```\n"
+                                        )
+                                        
+                                        .setThumbnail(`https://mc-heads.net/avatar/${UUID}/60`)
+
+                                        .setTimestamp()
+                                        .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+
+                                    // Mettez à jour le message avec le nouvel embed
+                                    if (isVersionBefore113(versionmc)) {
+                                        await i.update({ embeds: [moreStatsEmbedPre1_13], components: [backrow] });
+                                    } else {
+                                        await i.update({ embeds: [moreStatsEmbedAft1_13], components: [backrow] });
+                                    }
+                                } else {
+                                    // Si moreStatsClicked est faux, réaffichez l'embed initial
+                                    if (isVersionBefore113(versionmc)) {
+                                        await i.update({ embeds: [embedPre1_13], components: [row] });
+                                    } else {
+                                        await i.update({ embeds: [embedAft1_13], components: [row] });
+                                    }
+                                }
+                            }
+
+                            if (i.customId === 'next' || i.customId === 'prev') {
+                                // Passer au serveur suivant ou précédent
+                                serverIndex = (i.customId === 'next') ? (serverIndex + 1) % serveursAutorises.length : (serverIndex - 1 + serveursAutorises.length) % serveursAutorises.length;
+
+                                // Obtenez le nouveau nom de serveur
+                                const newServerName = serveursAutorises[serverIndex];
+
+                                // Récupérez les informations du nouveau serveur
+                                const serverDetails = getServeurInfos(newServerName);
+                                const { embedColor, caption, chemin, nomMonde } = serverDetails.informations;
+                                console.log(`${chemin} ${nomMonde}`)
+
+                                const newplayerStatsVar = getPlayerStatsAft1_13(chemin, nomMonde, UUID, versionmc);
+
+                                // Mise à jour du message avec les nouvelles informations du serveur
+                                const newEmbed = new EmbedBuilder()
+                                    .setColor(parseInt(embedColor.replace('#', '0x')))
+                                    .setTitle(`Statistiques Minecraft du joueur "${joueur}" sur "${newServerName}"`)
+                                    .setURL(`https://fr.namemc.com/profile/${joueur}`)
+
+                                    .setDescription(
+                                        `Toutes ses informations concerne le serveur ${newServerName}.\nUn classement sera bientôt disponible avec /mc-classement.\n\n**Principaux**\n` + "```" + `\n• Temps de jeu ➤ ${newplayerStatsVar.tempsJeux} Heure(s)\n• Nombre de morts ➤ ${newplayerStatsVar.nbMorts}\n• Temps depuis dernière morts ➤ ${newplayerStatsVar.tempsDernMorts} Heure(s)\n• Mobs tués ➤ ${newplayerStatsVar.nbMobKills}\n• Joueurs tués ➤ ${newplayerStatsVar.nbJoueursKills}` +
+                                        "```\n**Distance**```" + `\n• Distance à pied ➤ ${newplayerStatsVar.distTotalePied} Km\n• Distance en véhicule ➤ ${newplayerStatsVar.distTotaleVehicule} Km\n• Distance dans l'eau ➤ ${newplayerStatsVar.distTotaleDansEau} Km\n• Distance Chute + Escalade ➤ ${newplayerStatsVar.distChuteEscalade} Km\n• Distance totale ➤ ${newplayerStatsVar.distTotale} Km\n` + "```" +
+                                        "\nVous pouvez changer le serveur source de données et plus de détails sur celles-ci avec les boutons."
+                                    )
+                                    
+                                    .setImage(`https://mc-heads.net/body/${UUID}/left`)
+                                    .setThumbnail(`https://mc-heads.net/avatar/${UUID}/60`)
+
+                                    .setTimestamp()
+                                    .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+
+                                if (serverName == newServerName) { 
+                                    await i.update({ embeds: [newEmbed], components: [row] });
+                                } else {
+                                    await i.update({ embeds: [newEmbed], components: [switchonlyrow] });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Une erreur s\'est produite lors de la gestion de l\'interaction de bouton :', error);
+                            await interaction.reply("Une erreur s'est produite lors de la gestion de l'interaction de bouton :\n```" + error + "\n[...]```");
+                        }
+                    });
+                    // Fin de collector
+
+
+                    // Embed
+                    const embedPre1_13 = new EmbedBuilder()
+                    .setColor(parseInt(embedColor.replace('#', '0x')))
+                    .setTitle(`Statistiques Minecraft du joueur "${joueur}" sur "${serverName}"`)
+                    .setURL(`https://fr.namemc.com/profile/${joueur}`)
+
+                    .setDescription(
+                        "**La version de minecraft est trop ancienne. Toutes les statistiques ne peuvent pas être affichés.**"
+                    )
+
+                    .setThumbnail(`https://mc-heads.net/avatar/${UUID}/60`)
+
+                    .setTimestamp()
+                    .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+
+                    const embedAft1_13 = new EmbedBuilder()
+                        .setColor(parseInt(embedColor.replace('#', '0x')))
+                        .setTitle(`Statistiques Minecraft du joueur "${joueur}" sur "${serverName}"`)
+                        .setURL(`https://fr.namemc.com/profile/${joueur}`)
+
+                        .setDescription(
+                            `Toutes ses informations concerne le serveur ${serverName}.\nUn classement sera bientôt disponible avec /mc-classement.\n\n**Principaux**\n` + "```" + `\n• Temps de jeu ➤ ${playerStatsVar.tempsJeux} Heure(s)\n• Nombre de morts ➤ ${playerStatsVar.nbMorts}\n• Temps depuis dernière morts ➤ ${playerStatsVar.tempsDernMorts} Heure(s)\n• Mobs tués ➤ ${playerStatsVar.nbMobKills}\n• Joueurs tués ➤ ${playerStatsVar.nbJoueursKills}` +
+                            "```\n**Distance**```" + `\n• Distance à pied ➤ ${playerStatsVar.distTotalePied} Km\n• Distance en véhicule ➤ ${playerStatsVar.distTotaleVehicule} Km\n• Distance dans l'eau ➤ ${playerStatsVar.distTotaleDansEau} Km\n• Distance Chute + Escalade ➤ ${playerStatsVar.distChuteEscalade} Km\n• Distance totale ➤ ${playerStatsVar.distTotale} Km\n` + "```" +
+                            "\nVous pouvez changer le serveur source de données et plus de détails sur celles-ci avec les boutons."
+                        )
+
+                        .setImage(`https://mc-heads.net/body/${UUID}/left`)
+                        .setThumbnail(`https://mc-heads.net/avatar/${UUID}/60`)
+
+                        .setTimestamp()
+                        .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+
+                    if (isVersionBefore113(versionmc)) {
+                        await interaction.reply({ embeds: [embedPre1_13], components: [row] });
+                    } else {
+                        await interaction.reply({ embeds: [embedAft1_13], components: [row] });
+                    }
+                } catch (error) {
+                    // Catch les potentiels erreurs d'embed
+                    console.error("Une erreur s'est produite lors de la creation de l'embed :", error);
+                    await interaction.reply("Une erreur s'est produite lors de la creation de l'embed :\n```" + error + "\n[...]```");
+                }
+            } catch (error) {
+                // Catch les potentiels erreurs de lecture
+                console.error("Une erreur s'est produite lors de la lecture du fichier de statistiques :", error);
+                await interaction.reply("Une erreur s'est produite lors de la lecture des statistiques du joueur :\n```" + error + "\n[...]```");
+            }
+        } else {
+            await interaction.reply('Informations du serveur introuvable.');
+        }
+    }
+};
