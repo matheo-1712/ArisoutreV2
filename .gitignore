@@ -1,5 +1,2 @@
 node_modules
 config.json
-
-# Ignorer le fichier discordStats.json dans le dossier ressources/data
-./ressources/data/discordStats.json
