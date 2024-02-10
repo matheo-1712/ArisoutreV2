@@ -22,3 +22,5 @@ Si vous rencontrez des bogues ou si vous avez des suggestions pour améliorer le
 ## Licence
 
 [MIT License](LICENSE)
+
+Notre serveur Discord est accessible si vous souhaitez le découvrir et l'essayer : [Rejoignez-nous ici](https://discord.gg/CCm74BdKFF).
