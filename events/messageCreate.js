@@ -40,5 +40,10 @@ module.exports = {
             message.react(ratentifVnr);
 
         }
+
+        if (contentLower.includes('aime')) {
+            // Votre code à exécuter si le message contient 'aime'
+            message.react('❤️');
+        }
     }
 };
