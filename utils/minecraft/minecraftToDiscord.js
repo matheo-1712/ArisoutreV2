@@ -82,6 +82,9 @@ async function minecraftToDiscord(client) {
                         // Extraire le message de lancement du serveur
                         const match_done = line.match(regex_done);
 
+                        // Extraire un achivement que reçoit un joueur
+                        const match_achivement = line.match(/(\w+) has made the advancement \[(.+)\]/);
+
                         // Extraire le pseudo du joueur qui rejoint le serveur
                         const match_join = line.match(regex_join);
 
@@ -145,6 +148,19 @@ async function minecraftToDiscord(client) {
                                 const embed = new EmbedBuilder()
                                     .setTitle('Serveur Minecraft lancé')
                                     .setImage(embedImage)
+                                    .setColor(embedColor)
+                                    .setTimestamp()
+                                    .setFooter({ text: 'Arisu' });
+
+                                channelMc.send({ embeds: [embed] });
+                            }
+                        } else if (match_achivement) {
+                            const pseudo = match_achivement[1];
+                            const achivement = match_achivement[2];
+                            if (channelMc) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle(`${pseudo} a obtenu un succès`)
+                                    .setDescription(achivement)
                                     .setColor(embedColor)
                                     .setTimestamp()
                                     .setFooter({ text: 'Arisu' });

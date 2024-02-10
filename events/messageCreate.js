@@ -1,5 +1,4 @@
 const { Events } = require('discord.js');
-const { serv_antre } = require('../config.json');
 
 module.exports = {
     name: Events.MessageCreate,
@@ -39,6 +38,7 @@ module.exports = {
             // Votre code à exécuter si le message contient une insulte enregistrée
             const ratentifVnr = message.guild.emojis.cache.find(emoji => emoji.name === 'emoji_ratentifrage');
             message.react(ratentifVnr);
+
         }
     }
 };
