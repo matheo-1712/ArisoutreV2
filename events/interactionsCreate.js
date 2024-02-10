@@ -12,7 +12,7 @@ module.exports = {
       console.error(`No command matching ${commandName} was found.`);
       return;
     }
-/* Crée une erreur pour le moment 
+
     // Gestion des cooldowns
     const { cooldowns } = interaction.client;
 
@@ -39,7 +39,7 @@ module.exports = {
 
     timestamps.set(interaction.user.id, now);
     setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
-*/
+
     // Gestion de l'autocomplétion pour toutes les commandes
     if (interaction.isAutocomplete()) {
       try {
