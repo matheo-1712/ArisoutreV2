@@ -147,6 +147,7 @@ async function minecraftToDiscord(client) {
                             if (channelMc) {
                                 const embed = new EmbedBuilder()
                                     .setTitle('Serveur Minecraft lancé')
+                                    .setDescription(serverActuel)
                                     .setImage(embedImage)
                                     .setColor(embedColor)
                                     .setTimestamp()

@@ -13,7 +13,7 @@ module.exports = {
       return;
     }
 
-   // Gestion des cooldowns
+// Gestion des cooldowns
 const { cooldowns } = interaction.client;
 
 if (!cooldowns.has(commandName)) {
@@ -25,8 +25,8 @@ const timestamps = cooldowns.get(commandName);
 const defaultCooldownDuration = 3;
 const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
 
-// Vérifier si l'interaction est une autocomplétion
-if (!interaction.isAutocompleted()) {
+// Vérifier si l'interaction a des options, si oui, alors c'est une autocomplétion
+if (interaction.options._hoistedOptions.length === 0) {
   if (timestamps.has(interaction.user.id)) {
     const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
 
@@ -42,7 +42,6 @@ if (!interaction.isAutocompleted()) {
   timestamps.set(interaction.user.id, now);
   setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 }
-
 
     // Gestion de l'autocomplétion pour toutes les commandes
     if (interaction.isAutocomplete()) {
