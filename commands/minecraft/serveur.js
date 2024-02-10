@@ -16,6 +16,7 @@ const { getServerIsOnline } = require('../../utils/minecraft/getServeurIsOnline.
 const { activityArisoutre } = require('../../utils/arisoutre/activity.js');
 
 module.exports = {
+    cooldown: 15,
     data: new SlashCommandBuilder()
         .setName('serveur')
         .setDescription('Toutes les interactions avec le serveur.')
@@ -82,7 +83,7 @@ module.exports = {
 
         // Récupération du nom du serveur
         const versionRecup = interaction.options.getString('version');
-
+        
         // Logique de récupération des joueurs en ligne
         const playersOnline = await nbJoueurs();
         const serverOnlineStatus = await getServerIsOnline();
@@ -393,7 +394,7 @@ module.exports = {
                 }
             } else {
                 let description;
-                if (switchServerBoolean){
+                if (switchServerBoolean) {
                     description = "Merci d'attendre que le serveur se vide.\nSi tu veux leur dire de dégager, passe par <#1159113861593579612>.";
                 } else {
                     description = "Le switch de serveur est désactivé.";

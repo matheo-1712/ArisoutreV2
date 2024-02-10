@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const { getPseudoFromUUID } = require('../../utils/minecraft/UUID');
 
 module.exports = {
+    cooldown: 120,
     data: new SlashCommandBuilder()
         .setName('liste-register')
         .setDescription('Liste les joueurs enregistrés avec leur nom de compte Minecraft.')

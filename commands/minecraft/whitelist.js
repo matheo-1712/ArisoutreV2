@@ -3,6 +3,7 @@ const { Rcon } = require('rcon-client');
 const { serveur } = require('../../config.json');
 
 module.exports = {
+    cooldown: 60,
     data: new SlashCommandBuilder()
         .setName('whitelist')
         .setDescription('Ajoute un pseudo à la whitelist. Ne fonctionne que si le serveur Vanilla est lancé.')

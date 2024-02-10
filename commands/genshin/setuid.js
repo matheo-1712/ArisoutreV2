@@ -3,6 +3,7 @@ const mysql = require('mysql2/promise');
 const { sql } = require('../../config.json');
 
 module.exports = {
+    cooldown: 60,
     data: new SlashCommandBuilder()
         .setName('setuid')
         .setDescription('Enregistre ton UID Genshin.')

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
+    cooldown: 15,
     data: new SlashCommandBuilder()
         .setName('calcul-cv')
         .setDescription('Renvoie la crit value d\'un artefact.')

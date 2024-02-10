@@ -4,6 +4,7 @@ const mysql = require('mysql2/promise');
 const { sql } = require('../../config.json');
 
 module.exports = {
+    cooldown: 60,
     data: new SlashCommandBuilder()
         .setName('bot-message')
         .setDescription('Permet d\'envoyer un message en tant que bot')

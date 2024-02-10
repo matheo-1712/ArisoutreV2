@@ -31,7 +31,7 @@ module.exports = {
       if (now < expirationTime) {
         const expiredTimestamp = Math.round(expirationTime / 1000);
         return interaction.reply({
-          content: `Veuillez patienter, vous êtes en période de récupération pour \`${commandName}\`. Vous pourrez l'utiliser à nouveau <t:${expiredTimestamp}:R>.`,
+          content: `Veuillez patienter, vous êtes en période de récupération pour la commande \`${commandName}\`. Vous pourrez l'utiliser à nouveau dans <t:${expiredTimestamp}:R>.`,
           ephemeral: true,
         });
       }

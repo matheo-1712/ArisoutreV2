@@ -3,6 +3,7 @@ const mysql = require('mysql2/promise');
 const { sql } = require('../../config.json');
 
 module.exports = {
+    cooldown: 5,
     data: new SlashCommandBuilder()
         .setName('getuid')
         .setDescription('Voir l\'UID du joueur.')
