@@ -26,13 +26,38 @@ async function majStats() {
                 const nom_serv = nomServeur;
 
                 // Traitez les statistiques du joueur
+
+                // -- Temps de jeux
                 const tempsJeuxPre113 = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:play_one_minute'] / 20 / 3600) || 0;
                 const tempsJeuxAft113 = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:play_time'] / 20 / 3600) || 0;
                 const tempsJeux = Math.max(tempsJeuxPre113, tempsJeuxAft113);
+
+                // -- Morts
                 const nbMorts = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:deaths']) || 0;
 
-                console.log(`Statistiques pour ${pseudo}:, ${tempsJeux}, heures de jeu, ${nbMorts} sur le serveur ${nom_serv}`);
-                insertStats(uuid, tempsJeux, nbMorts, nom_serv, pseudo);
+                // -- Distances
+                const distMarche = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:walk_one_cm'] / 100) || 0;
+                const distSprint = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:sprint_one_cm'] / 100) || 0;
+                const distSneak = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:crouch_one_cm'] / 100) || 0;
+                const distCheval = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:horse_one_cm'] / 100) || 0;
+                const distMinecart = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:minecart_one_cm'] / 100) || 0;
+                const distChute = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:fall_one_cm'] / 100) || 0;
+                const distEscalade = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:climb_one_cm'] / 100) || 0;
+                const distAviate = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:aviate_one_cm'] / 100) || 0;
+                const distBateau = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:boat_one_cm'] / 100) || 0;
+                const distMarcheSurEau = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:walk_on_water_one_cm'] / 100) || 0;
+                const distMarcheSousEau = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:walk_under_water_one_cm'] / 100) || 0;
+                const distNage = Math.floor(statsJoueur.stats['minecraft:custom']['minecraft:swim_one_cm'] / 100) || 0;
+
+                // -- Totaux distance
+                const distTotalePied = distMarche + distSprint + distSneak;
+                const distTotaleVehicule = distCheval + distBateau + distAviate;
+                const distTotaleDansEau = distMarcheSurEau + distMarcheSousEau + distNage;
+                const distChuteEscalade = distChute + distEscalade;
+                const distTotale = distMarche + distSprint + distSneak + distCheval + distMinecart + distChute + distEscalade + distAviate + distBateau + distMarcheSurEau + distMarcheSousEau + distNage;
+
+                console.log(`Statistiques pour ${pseudo}:, ${tempsJeux}, heures de jeu, ${nbMorts} mort, ${distTotale} bloc marché sur le serveur ${nom_serv}`);
+                insertStats(uuid, tempsJeux, nbMorts, distTotale, nom_serv, pseudo);
             }
         } catch (erreur) {
             console.error(`Erreur lors de la lecture des stats du serveur ${nomServeur}:`, erreur);
@@ -68,7 +93,7 @@ async function majStats() {
             });
 
             // Requête SQL
-            const query = 'SELECT nom_serv FROM infos_serv WHERE actif=true;';
+            const query = 'SELECT nom_serv FROM infos_serv;';
 
             // Exécution de la requête
             const [rows] = await connection.execute(query);
@@ -94,7 +119,7 @@ async function majStats() {
             });
 
             // Requête SQL
-            const queryNomMonde = 'SELECT nom_monde FROM infos_serv WHERE actif=true;';
+            const queryNomMonde = 'SELECT nom_monde FROM infos_serv;';
 
             // Exécution de la requête
             const [rows] = await connection.execute(queryNomMonde);
@@ -120,7 +145,7 @@ async function majStats() {
             });
 
             // Requête SQL
-            const query = 'SELECT version_serv FROM infos_serv WHERE actif=true;';
+            const query = 'SELECT version_serv FROM infos_serv;';
 
             // Exécution de la requête
             const [rows] = await connection.execute(query);
@@ -165,7 +190,7 @@ async function majStats() {
         }
     }
 
-    async function insertStats(uuid, tempsJeux, nbMorts, server, pseudo) {
+    async function insertStats(uuid, tempsJeux, nbMorts, distTotale, server, pseudo) {
         let connection;
 
         try {
@@ -189,13 +214,13 @@ async function majStats() {
 
                 if (checkRows.length > 0) {
                     // Pseudo et serveur existent déjà, donc mise à jour des données
-                    const updateQuery = `UPDATE stats_serv SET temp_jeux = ?, nb_mort = ?, username = ? WHERE uuid_minecraft = ? AND id_serv = ?`;
-                    await connection.execute(updateQuery, [tempsJeux, nbMorts, pseudo, uuid, id_server]);
+                    const updateQuery = `UPDATE stats_serv SET temp_jeux = ?, nb_mort = ?, distTotale = ?, username = ? WHERE uuid_minecraft = ? AND id_serv = ?`;
+                    await connection.execute(updateQuery, [tempsJeux, nbMorts, distTotale, pseudo, uuid, id_server]);
                     console.log(`Données mises à jour pour ${uuid} sur le serveur ${server}.`);
                 } else {
                     // Pseudo ou serveur n'existe pas, donc insertion de nouvelles données
-                    const insertQuery = `INSERT INTO stats_serv (temp_jeux, nb_mort, username, id_serv, uuid_minecraft) VALUES (?, ?, ?, ?, ?)`;
-                    await connection.execute(insertQuery, [tempsJeux, nbMorts, pseudo, id_server, uuid]);
+                    const insertQuery = `INSERT INTO stats_serv (temp_jeux, nb_mort, distTotale, username, id_serv, uuid_minecraft) VALUES (?, ?,? , ?, ?, ?)`;
+                    await connection.execute(insertQuery, [tempsJeux, nbMorts, distTotale, pseudo, id_server, uuid]);
                     console.log(`Nouvelles données insérées pour ${uuid} sur le serveur ${server}.`);
                 }
             } else {
@@ -212,4 +237,4 @@ async function majStats() {
     }
 }
 
-module.exports = {majStats};
+module.exports = { majStats };

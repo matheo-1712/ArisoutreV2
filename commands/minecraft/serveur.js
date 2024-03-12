@@ -83,7 +83,7 @@ module.exports = {
 
         // Récupération du nom du serveur
         const versionRecup = interaction.options.getString('version');
-        
+
         // Logique de récupération des joueurs en ligne
         const playersOnline = await nbJoueurs();
         const serverOnlineStatus = await getServerIsOnline();
@@ -258,36 +258,47 @@ module.exports = {
 
                                 await interaction.reply({ embeds: [embed] });
                             } else if (serverActuel !== versionRecup) {
-                                // Met à jour la variable dans le fichier JSON
-                                fs.writeFileSync(serverFilePath, JSON.stringify({ server: versionRecup }, null, 2), 'utf8');
-                                const embed = new EmbedBuilder()
-                                    .setColor(embedColor)
-                                    .setTitle(`Passage du serveur ${serverActuel} à : ${versionRecup}`)
-                                    .setDescription("Je préviendrai lorsque le serveur sera ouvert.")
-                                    .setTimestamp()
-                                    .setFooter({ text: 'Arisu', iconURL: `${caption}` });
+                                if (versionRecup === null) {
+                                    const embed = new EmbedBuilder()
+                                        .setColor(embedColor)
+                                        .setTitle(`Impossible ; Aucune version sélectionnée`)
+                                        .setDescription("Merci de sélectionner une version.")
+                                        .setTimestamp()
+                                        .setFooter({ text: 'Arisu', iconURL: `${caption}` });
 
-                                try {
-                                    // Envoie la commande au serveur avec sudo
-                                    const sudoMDP = serveur.userPassword;
-                                    const sudoCommand = `bash /home/minecraft/startserv.bash`;
+                                    await interaction.reply({ embeds: [embed] });
+                                } else {
+                                    // Met à jour la variable dans le fichier JSON
+                                    fs.writeFileSync(serverFilePath, JSON.stringify({ server: versionRecup }, null, 2), 'utf8');
+                                    const embed = new EmbedBuilder()
+                                        .setColor(embedColor)
+                                        .setTitle(`Passage du serveur ${serverActuel} à : ${versionRecup}`)
+                                        .setDescription("Je préviendrai lorsque le serveur sera ouvert.")
+                                        .setTimestamp()
+                                        .setFooter({ text: 'Arisu', iconURL: `${caption}` });
 
-                                    // Saisie du mot de passe
-                                    const password = sudoMDP || await askPassword();
+                                    try {
+                                        // Envoie la commande au serveur avec sudo
+                                        const sudoMDP = serveur.userPassword;
+                                        const sudoCommand = `bash /home/minecraft/startserv.bash`;
 
-                                    // Exécute la commande avec sudo et le mot de passe
-                                    exec(`echo '${password}' | sudo -S ${sudoCommand}`, (error, stdout, stderr) => {
-                                        if (error) {
-                                            console.error(`Erreur lors de l'exécution de la commande avec sudo : ${stderr}`);
-                                            return;
-                                        }
-                                        console.log(`Commande exécutée avec succès : ${stdout}`);
-                                    });
-                                } catch (error) {
-                                    console.error('Erreur lors de l\'envoi de la commande :', error);
+                                        // Saisie du mot de passe
+                                        const password = sudoMDP || await askPassword();
+
+                                        // Exécute la commande avec sudo et le mot de passe
+                                        exec(`echo '${password}' | sudo -S ${sudoCommand}`, (error, stdout, stderr) => {
+                                            if (error) {
+                                                console.error(`Erreur lors de l'exécution de la commande avec sudo : ${stderr}`);
+                                                return;
+                                            }
+                                            console.log(`Commande exécutée avec succès : ${stdout}`);
+                                        });
+                                    } catch (error) {
+                                        console.error('Erreur lors de l\'envoi de la commande :', error);
+                                    }
+                                    // Envoyez l'embed comme réponse à l'interaction
+                                    await interaction.reply({ embeds: [embed] });
                                 }
-                                // Envoyez l'embed comme réponse à l'interaction
-                                await interaction.reply({ embeds: [embed] });
                             }
                         } else {
                             const embed = new EmbedBuilder()
