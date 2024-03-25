@@ -6,6 +6,7 @@ const { activityArisoutre } = require('../utils/arisoutre/activity');
 const { minecraftToDiscord } = require('../utils/minecraft/minecraftToDiscord');
 const { verifHeure, envoyerMessage } = require('../utils/genshin/dailyGI');
 const { majStats } = require('../utils/minecraft/majStats');
+const { pkDataToJson } = require('../utils/minecraft/dataPixelmon');
 
 // Module.exports pour l'événement ClientReady
 module.exports = {
@@ -27,6 +28,7 @@ module.exports = {
         setInterval(async () => {
             // Fonction asynchrone pour la mise à jour des stats
             await majStats();
+            await pkDataToJson();
         }, 24 * 60 * 60 * 1000); // Interval de 24 heures
 
 

@@ -2,6 +2,7 @@ const mysql = require('mysql2/promise');
 const { sql } = require('../config.json');
 
 async function select_(table, colonnes, conditions) {
+
     try {
         const connection = await mysql.createConnection({
             host: sql.host,
