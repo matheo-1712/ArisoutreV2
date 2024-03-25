@@ -49,5 +49,10 @@ module.exports = {
             // Votre code à exécuter si le message contient 'aime'
             message.react('❤️');
         }
+
+        if (contentLower.includes('déteste')) {
+            // Votre code à exécuter si le message contient 'déteste'
+            message.react('💔');
+        }
     }
 };
