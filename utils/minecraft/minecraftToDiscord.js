@@ -13,7 +13,7 @@ let chatMessageRegex; // Expression régulière pour extraire le message du joue
 
 async function minecraftToDiscord(client) {
     const discordChannelId = serv_antre.channelMc;
-    const logChannelIdArisu = serv_antre.channelArisoutreLogs;
+    const mcmMyAdminChannel = serv_antre.channelMcLogs;
 
     // Regex pour le message de lancement du serveur
     const regex_done = /Done \([\d.]+\w*\)! For help, type "help"/;
@@ -41,7 +41,7 @@ async function minecraftToDiscord(client) {
 
             // Utiliser l'id du canal directement plutôt que de récupérer l'objet canal à chaque itération
             const channelMc = client.channels.cache.get(discordChannelId);
-            const logChannel = client.channels.cache.get(logChannelIdArisu);
+            const logChannel = client.channels.cache.get(mcmMyAdminChannel);
 
             try {
                 const [rows] = await connection.execute('SELECT path_serv, embedColor FROM infos_serv WHERE nom_serv = ?', [serverActuel]);
@@ -198,7 +198,7 @@ async function minecraftToDiscord(client) {
                     });
 
                     // Envoyer le message de log après la boucle forEach
-                    const logChannel = client.channels.cache.get(logChannelIdArisu);
+                    const logChannel = client.channels.cache.get(mcmMyAdminChannel);
                     if (logChannel) {
                         tail.on('change', () => {
                             logChannel.send(`Le fichier latest.log a été modifié`);
