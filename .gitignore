@@ -3,3 +3,4 @@ config.json
 bot/
 ressources/data/discordStats.json
 ressources/data/minecraft/pixelmon/*
+ressources/img/pokemon/sprites/*
