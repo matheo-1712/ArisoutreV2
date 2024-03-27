@@ -33,7 +33,6 @@ async function getUUIDFromDiscordId(discordId) {
     try {
         const response = await select_('mc_link_discord', ['uuid_minecraft'], [`id_discord = "${discordId}"`]);
         const UUID = response[0].uuid_minecraft;
-g
         return UUID;
     } catch (error) {
         console.error(`Erreur lors de la récupération de l'UUID pour ${discordId}: ${error.message}`);
