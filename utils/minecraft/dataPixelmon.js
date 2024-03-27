@@ -11,7 +11,7 @@ async function pixelmonPath() {
     catch (error) {
         console.error('Erreur lors de la récupération du chemin du serveur Pixelmon :', error);
         return null;
-}
+    }
 }
 
 // Récupération des données du pokémon à partir de l'UUID et du JSON
@@ -36,11 +36,21 @@ async function recupPokeDataParUUID(uuid) {
                 // Récupère le ndex du Pokémon dans la party actuelle
                 const ndex = jsonData.value[party].value.ndex.value;
                 const shiny = jsonData.value[party].value.palette.value;
+                // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
                 if (shiny === "shiny") {
                     console.log('Le pokémon est shiny');
-                    pokeInfo = ndex + " shiny"; // Utilisation de l'opérateur += pour concaténer "Shiny" à la fin de ndex
-                } else
+                    pokeInfo = ndex + "_shiny"; // Utilisation de l'opérateur += pour concaténer "Shiny" à la fin de ndex
+                    // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
+                    if (ndex < 1000) {
+                        pokeInfo = "0" + pokeInfo;
+                    }
+                } else {
                     pokeInfo = ndex;
+                    if (ndex < 1000) {
+                        pokeInfo = "0" + pokeInfo;
+                    }
+                }
+                // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
                 ndexList.push(pokeInfo);
                 console.log('Ndex trouvé dans la party:', ndex);
             } else {

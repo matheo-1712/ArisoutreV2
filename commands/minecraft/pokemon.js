@@ -1,6 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const { recupPokeDataParUUID } = require('../../utils/minecraft/dataPixelmon');
 const { getUUIDFromDiscordId } = require('../../utils/minecraft/UUID');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+const path = require('path');
+const fs = require('fs').promises;
 
 module.exports = {
     cooldown: 60,
@@ -50,7 +53,7 @@ module.exports = {
             await interaction.reply({ content: "Aucun Pokémon n'a été trouvé pour cet utilisateur. S'il vous plaît noter que si vous n'avez jamais joué à Pixelfrost, cela est normal. Sinon merci de contacter un administrateur.", ephemeral: true });
             return;
         }
-        
+
         console.log('Liste des pokémons :', ndexList);
 
         // Vérification de la présence de données
@@ -60,13 +63,56 @@ module.exports = {
         }
 
         // Construction du message
-        let message = `Voici les numéros du Pokédex des Pokémon que vous avez capturés :\n `;
-        for (const ndex of ndexList) {
-            message += `${ndex}, `;
+        let message = `Voici les Pokemon de votre équipe PixelFrost :`;
+
+        // Construction de l'image
+        const canvas = createCanvas(800, 400);
+        const ctx = canvas.getContext('2d');
+        const background = await loadImage('./ressources/img/bienvenue.png');
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+        registerFont('./ressources/police/utendo/Utendo-Black.ttf', { family: 'Utendo' });
+
+        // Mettre la tête Minecraft de l'utilisateur en haut a gauche
+        const avatarURL = `https://mc-heads.net/avatar/${UUID}`;
+        const avatar = await loadImage(avatarURL);
+        const avatarSize = 100;
+        const avatarX = 15;
+        const avatarY = 15;
+        ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+
+        // Définir les paramètres communs des Pokémon
+        const pokemonSize = 100;
+        const startY = [15, 150];
+        const startX = [150, 300, 450, 600]; // Ajoutez d'autres valeurs si nécessaire
+
+        // Boucle pour charger et dessiner les Pokémon
+        for (let i = 0; i < Math.min(ndexList.length, startY.length * startX.length); i++) {
+            const rowIndex = Math.floor(i / startX.length);
+            const colIndex = i % startX.length;
+
+            // Résoudre le chemin absolu de l'image
+            const imagePath = path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${ndexList[i]}.png`);
+
+            try {
+                // Vérifier si le fichier existe
+                await fs.access(imagePath);
+            } catch (error) {
+                // Si le fichier n'existe pas, utiliser le nom alternatif
+                console.log(`L'image ${imagePath} n'existe pas. Utilisation de l'image de remplacement.`);
+                ndexList[i] = ndexList[i] + "_F"; // Remplacer le nom de l'image
+            }
+
+            // Charger l'image à partir du chemin absolu (utilisant le nom alternatif si nécessaire)
+            const pokemon = await loadImage(path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${ndexList[i]}.png`));
+
+            // Dessiner l'image du Pokémon
+            ctx.drawImage(pokemon, startX[colIndex], startY[rowIndex], pokemonSize, pokemonSize);
         }
 
+        // Envoi de l'image
+        const attachment = new AttachmentBuilder(canvas.toBuffer(), 'image.png');
 
-        // Répondre à l'interaction avec le message
-        await interaction.reply({ content: message, ephemeral: true });
+        // Envoi de la réponse
+        await interaction.reply({ content: message, files: [attachment], ephemeral: false });
     }
 };
