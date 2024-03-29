@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const { recupPokeDataParUUID } = require('../../utils/minecraft/dataPixelmon');
-const { getUUIDFromDiscordId } = require('../../utils/minecraft/UUID');
+const { getUUIDFromDiscordId, getPseudoFromUUID } = require('../../utils/minecraft/UUID');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 const path = require('path');
 const fs = require('fs').promises;
@@ -66,24 +66,41 @@ module.exports = {
         let message = `Voici les Pokemon de votre équipe PixelFrost :`;
 
         // Construction de l'image
-        const canvas = createCanvas(800, 400);
+        const canvas = createCanvas(1920, 1080);
         const ctx = canvas.getContext('2d');
-        const background = await loadImage('./ressources/img/bienvenue.png');
+        const background = await loadImage('./ressources/img/pokemon/card/default-card.png');
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
         registerFont('./ressources/police/utendo/Utendo-Black.ttf', { family: 'Utendo' });
 
         // Mettre la tête Minecraft de l'utilisateur en haut a gauche
-        const avatarURL = `https://mc-heads.net/avatar/${UUID}`;
+        const avatarURL = `https://mc-heads.net/body/${UUID}`;
         const avatar = await loadImage(avatarURL);
-        const avatarSize = 100;
-        const avatarX = 15;
-        const avatarY = 15;
-        ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+        const avatarSizeX = 250;
+        const avatarSizeY = 550;
+        const avatarX = 150;
+        const avatarY = 280;
+        ctx.drawImage(avatar, avatarX, avatarY, avatarSizeX, avatarSizeY);
+
+        // Mettre le pseudo du joueur en bas a gauche
+        const pseudo = await getPseudoFromUUID(UUID);
+        if (!pseudo) {
+            await interaction.reply({ content: 'Une erreur s\'est produite lors de la récupération du pseudo.', ephemeral: true });
+            return;
+        }
+        if (pseudo.length > 10) {
+            ctx.font = '30px "Utendo"';
+        } else {
+            ctx.font = '40px "Utendo"';
+        }
+        const pseudoX = 263;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.fillText(pseudo, pseudoX, 950);
 
         // Définir les paramètres communs des Pokémon
-        const pokemonSize = 100;
-        const startY = [15, 150];
-        const startX = [150, 300, 450, 600]; // Ajoutez d'autres valeurs si nécessaire
+        const pokemonSize = 250;
+        const startY = [100, 575];
+        const startX = [510, 835, 1175]; // Ajoutez d'autres valeurs si nécessaire
 
         // Boucle pour charger et dessiner les Pokémon
         for (let i = 0; i < Math.min(ndexList.length, startY.length * startX.length); i++) {

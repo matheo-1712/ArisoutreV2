@@ -41,12 +41,20 @@ async function recupPokeDataParUUID(uuid) {
                     console.log('Le pokémon est shiny');
                     pokeInfo = ndex + "_shiny"; // Utilisation de l'opérateur += pour concaténer "Shiny" à la fin de ndex
                     // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
-                    if (ndex < 1000) {
+                    if (ndex < 10) {
+                        pokeInfo = "000" + pokeInfo;
+                    } else if (ndex < 100) {
+                        pokeInfo = "00" + pokeInfo;
+                    } else if (ndex < 1000) {
                         pokeInfo = "0" + pokeInfo;
                     }
                 } else {
                     pokeInfo = ndex;
-                    if (ndex < 1000) {
+                    if (ndex < 10) {
+                        pokeInfo = "000" + pokeInfo;
+                    } else if (ndex < 100) {
+                        pokeInfo = "00" + pokeInfo;
+                    } else if (ndex < 1000) {
                         pokeInfo = "0" + pokeInfo;
                     }
                 }
