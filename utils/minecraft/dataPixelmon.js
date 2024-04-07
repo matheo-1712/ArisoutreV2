@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fetch = require('node-fetch');
 const path = require('path');
 const nbt = require('nbt');
 const { select_ } = require('../SQL.js');
@@ -22,57 +23,60 @@ async function recupPokeDataParUUID(uuid) {
         const jsonPath = path.join(__dirname, '../../ressources/data/minecraft/pixelmon/', uuid + '.json');
         console.log('Chemin du fichier JSON de data', jsonPath);
         const jsonData = require(jsonPath);
-        // console.log('Contenu du fichier JSON:', jsonData);
 
-        const parties = ['party0', 'party1', 'party2', 'party3', 'party4', 'party5']; // Utilisation de party0 à party5
-        const ndexList = [];
+        const parties = ['party0', 'party1', 'party2', 'party3', 'party4', 'party5'];
+        const pokemonInstances = [];
 
         for (const party of parties) {
             console.log('Traitement de la party:', party);
             if (jsonData.value[party] && jsonData.value[party].value.ndex) {
 
-                let pokeInfo
-
-                // Récupère le ndex du Pokémon dans la party actuelle
+                // Récupérer le ndex du Pokémon
                 const ndex = jsonData.value[party].value.ndex.value;
-                const shiny = jsonData.value[party].value.palette.value;
-                // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
-                if (shiny === "shiny") {
-                    console.log('Le pokémon est shiny');
-                    pokeInfo = ndex + "_shiny"; // Utilisation de l'opérateur += pour concaténer "Shiny" à la fin de ndex
-                    // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
-                    if (ndex < 10) {
-                        pokeInfo = "000" + pokeInfo;
-                    } else if (ndex < 100) {
-                        pokeInfo = "00" + pokeInfo;
-                    } else if (ndex < 1000) {
-                        pokeInfo = "0" + pokeInfo;
+
+                // Vérifier si le Pokémon est shiny
+                const shiny = jsonData.value[party].value.palette.value === "shiny";
+
+                // Récupération du nom de l'item tenu avec une valeur par défaut
+                const objet = jsonData.value[party]?.value?.HeldItemStack?.value?.id?.value ?? "Aucun objet tenu";
+
+                // Récupérer le nickname depuis les données JSON, avec une valeur par défaut si non disponible
+                const nickname = jsonData?.value?.[party]?.value?.Nickname?.value ?? await (async () => {
+                    try {
+                        const response = await fetch(`https://tyradex.vercel.app/api/v1/pokemon/${ndex}`);
+                        if (!response.ok) {
+                            throw new Error(`Erreur lors de la requête à l'API: ${response.statusText}`);
+                        }
+                        const data = await response.json();
+                        return data.name.fr;
+                    } catch (error) {
+                        console.error(`Une erreur s'est produite lors de la récupération du Pokémon n°${ndex}:`, error);
+                        return `Pokémon n°${ndex}`;
                     }
-                } else {
-                    pokeInfo = ndex;
-                    if (ndex < 10) {
-                        pokeInfo = "000" + pokeInfo;
-                    } else if (ndex < 100) {
-                        pokeInfo = "00" + pokeInfo;
-                    } else if (ndex < 1000) {
-                        pokeInfo = "0" + pokeInfo;
-                    }
-                }
-                // Ajouter un zéro devant le ndex si celui-ci est inférieur à 1000
-                ndexList.push(pokeInfo);
+                })();
+
+                let pokeInstance = {
+                    ndex: ndex.toString().padStart(4, '0'), // PadStart pour ajouter des zéros au début si nécessaire
+                    shiny: shiny,
+                    nickname: nickname,
+                    objet: objet
+                };
+
+                pokemonInstances.push(pokeInstance); // Stocker l'instance du Pokémon dans le tableau
                 console.log('Ndex trouvé dans la party:', ndex);
             } else {
                 console.log('Pas de ndex trouvé dans la party:', party);
             }
         }
 
-        console.log('Liste des ndex:', ndexList);
-        return ndexList;
+        console.log('Instances des Pokémon:', pokemonInstances);
+        return pokemonInstances;
     } catch (error) {
         console.error('Erreur lors de la récupération des données du pokémon :', error);
         return null;
     }
 }
+
 
 // Fonction de format de l'uuid pour correspondre au nom des fichiers
 async function formatUUID(uuid) {

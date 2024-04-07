@@ -54,8 +54,6 @@ module.exports = {
             return;
         }
 
-        console.log('Liste des pokémons :', ndexList);
-
         // Vérification de la présence de données
         if (!ndexList) {
             await interaction.reply({ content: 'Une erreur s\'est produite lors de la récupération des données.', ephemeral: true });
@@ -70,16 +68,22 @@ module.exports = {
         const ctx = canvas.getContext('2d');
         const background = await loadImage('./ressources/img/pokemon/card/default-card.png');
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-        registerFont('./ressources/police/utendo/Utendo-Black.ttf', { family: 'Utendo' });
+        registerFont('./ressources/police/minecraftia/minecraftia.ttf', { family: 'Minecraftia' });
 
-        // Mettre la tête Minecraft de l'utilisateur en haut a gauche
+        // Mettre la tête Minecraft de l'utilisateur centrée par rapport à un point spécifique
         const avatarURL = `https://mc-heads.net/body/${UUID}`;
         const avatar = await loadImage(avatarURL);
-        const avatarSizeX = 250;
-        const avatarSizeY = 550;
-        const avatarX = 150;
-        const avatarY = 280;
+        const avatarSizeX = 215;
+        const avatarSizeY = 500;
+        const centerX = 275; // Coordonnée X du centre du canevas
+        const centerY = 565; // Coordonnée Y du centre du canevas
+
+        // Calculer les coordonnées de l'image pour la centrer par rapport au point spécifique
+        const avatarX = centerX - avatarSizeX / 2; // Coordonnée X pour centrer horizontalement
+        const avatarY = centerY - avatarSizeY / 2; // Coordonnée Y pour centrer verticalement
+
         ctx.drawImage(avatar, avatarX, avatarY, avatarSizeX, avatarSizeY);
+
 
         // Mettre le pseudo du joueur en bas a gauche
         const pseudo = await getPseudoFromUUID(UUID);
@@ -88,18 +92,18 @@ module.exports = {
             return;
         }
         if (pseudo.length > 10) {
-            ctx.font = '30px "Utendo"';
+            ctx.font = '32px "Minecraftia"';
         } else {
-            ctx.font = '40px "Utendo"';
+            ctx.font = '40px "Minecraftia"';
         }
-        const pseudoX = 263;
+        const pseudoX = 272;
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
         ctx.fillText(pseudo, pseudoX, 950);
 
         // Définir les paramètres communs des Pokémon
         const pokemonSize = 250;
-        const startY = [100, 575];
+        const startY = [100, 570];
         const startX = [510, 835, 1175]; // Ajoutez d'autres valeurs si nécessaire
 
         // Boucle pour charger et dessiner les Pokémon
@@ -107,8 +111,29 @@ module.exports = {
             const rowIndex = Math.floor(i / startX.length);
             const colIndex = i % startX.length;
 
+            // Récupérer le numéro du Pokémon
+            let pokemonSprites = ndexList[i].ndex;
+
+            // Récupérer si il y a un caractère shiny
+            const shiny = ndexList[i].shiny;
+
+            if (shiny) {
+                pokemonSprites = pokemonSprites + "_shiny";
+            }
+
+            // Récupérer l'objet tenu par le Pokémon
+            const objet = ndexList[i].objet;
+
+            if (objet.includes('ite')) {
+                if (objet.includes('y')) {
+                pokemonSprites = pokemonSprites + "_form2";
+                } else {
+                    pokemonSprites = pokemonSprites + "_form1";
+                }
+            }
+
             // Résoudre le chemin absolu de l'image
-            const imagePath = path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${ndexList[i]}.png`);
+            const imagePath = path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${pokemonSprites}.png`);
 
             try {
                 // Vérifier si le fichier existe
@@ -116,16 +141,22 @@ module.exports = {
             } catch (error) {
                 // Si le fichier n'existe pas, utiliser le nom alternatif
                 console.log(`L'image ${imagePath} n'existe pas. Utilisation de l'image de remplacement.`);
-                ndexList[i] = ndexList[i] + "_F"; // Remplacer le nom de l'image
+                pokemonSprites = pokemonSprites + "_F"; // Remplacer le numéro du Pokémon par le nom alternatif
             }
 
             // Charger l'image à partir du chemin absolu (utilisant le nom alternatif si nécessaire)
-            const pokemon = await loadImage(path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${ndexList[i]}.png`));
+            const pokemon = await loadImage(path.resolve(`/home/arisu/Arisoutre/ressources/img/pokemon/sprites/${pokemonSprites}.png`));
 
             // Dessiner l'image du Pokémon
             ctx.drawImage(pokemon, startX[colIndex], startY[rowIndex], pokemonSize, pokemonSize);
-        }
 
+            // Ajouter le nickname du Pokémon avec un décalage vers le bas
+            ctx.font = '30px "Minecraftia"';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            const offsetY = 110; // Décalage vers le bas
+            ctx.fillText(ndexList[i].nickname, startX[colIndex] + pokemonSize / 2, startY[rowIndex] + pokemonSize + 20 + offsetY);
+        }
         // Envoi de l'image
         const attachment = new AttachmentBuilder(canvas.toBuffer(), 'image.png');
 
