@@ -66,7 +66,7 @@ module.exports = {
         } catch (error) {
             console.error(error);
             // Handle the error appropriately, e.g., send an error message to the user
-            await interaction.reply("An error occurred while processing your request.");
+            await interaction.reply("Une erreur est survenue lors de la récupération des données.");
         }
     },
 
