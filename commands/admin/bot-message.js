@@ -55,9 +55,6 @@ module.exports = {
             // Extract values from the 'nom_serv' column of the result
             const choices = rows.map((row, index) => ({ name: row.nom_serv, value: row.nom_serv }));
 
-            // Display information in the console
-            // console.log(choices);
-
             // Filter choices based on the focused value
             const filtered = choices.filter(choice => choice.name.startsWith(focusedValue));
 

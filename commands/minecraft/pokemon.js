@@ -45,6 +45,9 @@ module.exports = {
         }
         console.log(UUID);
 
+        // Initialisation du font du texte
+        registerFont('./ressources/police/minecraftia/minecraftia.ttf', { family: 'Minecraftia' });
+
         // Récupération des données du pokémon
         const ndexList = await recupPokeDataParUUID(UUID);
 
@@ -68,7 +71,6 @@ module.exports = {
         const ctx = canvas.getContext('2d');
         const background = await loadImage('./ressources/img/pokemon/card/default-card.png');
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-        registerFont('./ressources/police/minecraftia/minecraftia.ttf', { family: 'Minecraftia' });
 
         // Mettre la tête Minecraft de l'utilisateur centrée par rapport à un point spécifique
         const avatarURL = `https://mc-heads.net/body/${UUID}`;

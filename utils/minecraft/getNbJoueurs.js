@@ -17,11 +17,11 @@ async function nbJoueurs() {
             // console.log('Nombre de joueurs en ligne :', playersOnline);
             return playersOnline;
         } else {
-            console.log('Le nombre de joueurs en ligne n\'est pas disponible. Utilisation de la valeur par défaut : 0');
+            // console.log('Le nombre de joueurs en ligne n\'est pas disponible. Utilisation de la valeur par défaut : 0');
             return 0;
         }
     } else {
-        console.log('Aucuns joueurs connectés.');
+        // console.log('Aucuns joueurs connectés.');
         return 0;
     }
 }
